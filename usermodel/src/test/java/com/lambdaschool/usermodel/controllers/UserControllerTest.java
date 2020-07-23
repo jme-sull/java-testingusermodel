@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = UserController.class)
@@ -173,6 +175,7 @@ public class UserControllerTest
         ObjectMapper mapper = new ObjectMapper();
         String userString = mapper.writeValueAsString(u1);
 
+
         Mockito.when(userService.save(any(User.class))).thenReturn(u1);
 
         RequestBuilder rb = MockMvcRequestBuilders.post(apiURL)
@@ -180,21 +183,50 @@ public class UserControllerTest
             .contentType(MediaType.APPLICATION_JSON)
             .content(userString);
         mockMvc.perform(rb).andExpect(status().isCreated()).andDo(MockMvcResultHandlers.print());
-
     }
 
-    @Test
-    public void f_updateFullUser()
-    {
-    }
 
     @Test
-    public void g_updateUser()
+    public void f_updateFullUser() throws Exception
     {
+        String apiURL = "/users/user/100";
+        User u1 = new User("test-jamie",
+            "password",
+            "jamie@lambdaschool.local");
+        u1.getUseremails()
+            .add(new Useremail(u1,
+                "jamie@email.local"));
+        u1.getUseremails()
+            .add(new Useremail(u1,
+                "jamie@mymail.local"));
+        u1.setUserid(100);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String userString = mapper.writeValueAsString(u1);
+
+        Mockito.when(userService.save(u1))
+            .thenReturn(u1);
+
+        RequestBuilder rb = MockMvcRequestBuilders.put(apiURL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .content(userString);
+        mockMvc.perform(rb)
+            .andExpect(status().isOk())
+            .andDo(MockMvcResultHandlers.print());
     }
+    
 
     @Test
-    public void h_deleteUserById()
+    public void h_deleteUserById() throws Exception
     {
+        String apiURL = "/users/user/100";
+
+        RequestBuilder rb = MockMvcRequestBuilders.delete(apiURL, 100)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON);
+        mockMvc.perform(rb)
+            .andExpect(status().isOk())
+            .andDo(MockMvcResultHandlers.print());
     }
 }
